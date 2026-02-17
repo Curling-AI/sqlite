@@ -12,6 +12,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"io"
 	"math/bits"
 	"net/url"
 	"runtime"
@@ -357,6 +358,18 @@ type HookRegisterer interface {
 	RegisterPreUpdateHook(PreUpdateHookFn)
 	RegisterCommitHook(CommitHookFn)
 	RegisterRollbackHook(RollbackHookFn)
+	RegisterWALHook(WALHookFn)
+}
+
+// CheckpointController provides explicit WAL checkpoint control.
+type CheckpointController interface {
+	WALCheckpoint(dbName string, mode CheckpointMode) (CheckpointResult, error)
+}
+
+// StreamingBackuper provides streaming backup and restore operations.
+type StreamingBackuper interface {
+	StreamingBackup(w io.Writer, progressFn func(remaining, total int)) error
+	StreamingRestore(r io.Reader) error
 }
 
 // ConnectionHookFn function type for a connection hook on the Driver. Connection
